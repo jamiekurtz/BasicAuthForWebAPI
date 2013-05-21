@@ -4,7 +4,7 @@ BasicAuthForWebAPI
 Nuget-deployed library for leveraging HTTP basic authentication in ASP.NET Web API.
 
 
-By default, will use the [ASP.NET Membership Provider](http://msdn.microsoft.com/en-us/library/yh26yfzy(v=VS.100).aspx). But you can modify and extend this behavior in either or both of the following ways:
+By default, will use the [ASP.NET Membership Provider](http://msdn.microsoft.com/en-us/library/yh26yfzy.aspx). But you can modify and extend this behavior in either or both of the following ways:
 - Pass your own IMembershipProvider to the BasicAuthenticationMessageHandler constructor
 - Set the GetAdditionalClaims property to a Func that returns a collection of System.Security.Claims.Claim objects
     
