@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -93,7 +94,17 @@ namespace BasicAuthForWebAPI
 
             if (GetAdditionalClaims != null)
             {
-                identity.AddClaims(GetAdditionalClaims(user));
+                try
+                {
+                    var claims = GetAdditionalClaims(user);
+                    identity.AddClaims(claims);
+                }
+                catch (Exception exception)
+                {
+                    const string msg = "Error getting additional claims from caller";
+                    Debug.WriteLine(msg + ": " + exception);
+                    throw new Exception(msg, exception);
+                }
             }
 
             return identity;
