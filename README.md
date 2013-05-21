@@ -52,4 +52,4 @@ You can also implement the IMembershipProvider interface to create your own cred
         MembershipProviderUser GetUser(string username);
     }
 
-Note that the The GetAdditionalClaims property will still be invoked if you supply your own IMembershipProvider.
+Note that the GetAdditionalClaims property will still be invoked if you supply your own IMembershipProvider.
