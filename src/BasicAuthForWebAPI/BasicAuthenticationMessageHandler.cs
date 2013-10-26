@@ -28,10 +28,13 @@ namespace BasicAuthForWebAPI
         public BasicAuthenticationMessageHandler(IMembershipProvider membershipProvider)
         {
             _membershipProvider = membershipProvider;
+            IssueChallengeResponse = false;
         }
 
         public Func<MembershipProviderUser, IEnumerable<Claim>> GetAdditionalClaims { get; set; }
  
+        public bool IssueChallengeResponse { get; set; }
+
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -39,12 +42,12 @@ namespace BasicAuthForWebAPI
             var authHeader = request.Headers.Authorization;
             if (authHeader == null)
             {
-                return CreateUnauthorizedResponse();
+                return CreateResponse(request, cancellationToken);
             }
 
             if (authHeader.Scheme != BasicScheme)
             {
-                return CreateUnauthorizedResponse();
+                return CreateResponse(request, cancellationToken);
             }
 
             var encodedCredentials = authHeader.Parameter;
@@ -54,7 +57,7 @@ namespace BasicAuthForWebAPI
 
             if (credentialParts.Length != 2)
             {
-                return CreateUnauthorizedResponse();
+                return CreateResponse(request, cancellationToken);
             }
 
             var username = credentialParts[0].Trim();
@@ -62,12 +65,17 @@ namespace BasicAuthForWebAPI
 
             if (!_membershipProvider.ValidateUser(username, password))
             {
-                return CreateUnauthorizedResponse();
+                return CreateResponse(request, cancellationToken);
             }
 
             SetPrincipal(username);
 
             return base.SendAsync(request, cancellationToken);
+        }
+
+        private Task<HttpResponseMessage> CreateResponse(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return IssueChallengeResponse ? CreateUnauthorizedResponse() : base.SendAsync(request, cancellationToken);
         }
 
         private void SetPrincipal(string username)
@@ -112,9 +120,9 @@ namespace BasicAuthForWebAPI
 
         private Task<HttpResponseMessage> CreateUnauthorizedResponse()
         {
-            var response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            var response = new HttpResponseMessage {StatusCode = HttpStatusCode.Unauthorized};
             response.Headers.Add(ChallengeAuthenticationHeaderName, BasicScheme);
-
+            
             var taskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
             taskCompletionSource.SetResult(response);
             return taskCompletionSource.Task;
